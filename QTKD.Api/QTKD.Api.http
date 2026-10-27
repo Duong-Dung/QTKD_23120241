@@ -1,0 +1,17 @@
+@QTKD.Api_HostAddress = http://localhost:5293
+
+### 1. Lấy danh sách tất cả khách hàng
+GET {{QTKD.Api_HostAddress}}/api/customers
+Accept: application/json
+
+### 2. Lấy thông tin hợp đồng theo Id (Hợp đồng HD-2026-018 của Công ty Minh Phát)
+GET {{QTKD.Api_HostAddress}}/api/contracts/1
+Accept: application/json
+
+### 3. Thử lấy hợp đồng không tồn tại (Kiểm tra trả về 404 Not Found)
+GET {{QTKD.Api_HostAddress}}/api/contracts/999
+Accept: application/json
+
+### 4. Lấy danh sách bảng giá và chi tiết giá dịch vụ
+GET {{QTKD.Api_HostAddress}}/api/pricelists
+Accept: application/json
