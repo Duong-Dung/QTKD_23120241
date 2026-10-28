@@ -160,7 +160,7 @@ Mở file [appsettings.json](file:///d:/download/23120241_TH5/QTKD.Api/appsettin
 ```json
 {
   "ConnectionStrings": {
-    "DefaultConnection": "Host=localhost;Port=5432;Database=qtkd_db;Username=postgres;Password=mật_khẩu_của_bạn"
+    "DefaultConnection": "Host=localhost;Port=5433;Database=qtkd_db;Username=postgres;Password=postgres"
   }
 }
 ```
