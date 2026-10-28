@@ -34,7 +34,8 @@ if (app.Environment.IsDevelopment())
     });
 }
 
-app.UseHttpsRedirection();
+// Điều hướng trang chủ (/) trực tiếp sang Swagger UI để tiện kiểm thử
+app.MapGet("/", () => Results.Redirect("/swagger"));
 
 app.UseAuthorization();
 
