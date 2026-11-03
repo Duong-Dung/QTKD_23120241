@@ -1,11 +1,12 @@
 using Microsoft.EntityFrameworkCore;
 using QTKD.Api.Data;
 using QTKD.Api.DTOs;
+using QTKD.Api.Entities;
 
 namespace QTKD.Api.Services;
 
 /// <summary>
-/// Cài đặt nghiệp vụ lấy dữ liệu Khách hàng
+/// Cài đặt nghiệp vụ xử lý dữ liệu Khách hàng
 /// </summary>
 public class CustomerService : ICustomerService
 {
@@ -27,5 +28,61 @@ public class CustomerService : ICustomerService
                 Status = c.Status
             })
             .ToListAsync();
+    }
+
+    public async Task<CustomerDto?> GetCustomerByIdAsync(int id)
+    {
+        var customer = await _context.Customers
+            .AsNoTracking()
+            .FirstOrDefaultAsync(c => c.Id == id);
+
+        if (customer == null) return null;
+
+        return new CustomerDto
+        {
+            Id = customer.Id,
+            Name = customer.Name,
+            Status = customer.Status
+        };
+    }
+
+    public async Task<CustomerDto> CreateCustomerAsync(CreateCustomerDto dto)
+    {
+        var customer = new Customer
+        {
+            Name = dto.Name.Trim(),
+            Status = string.IsNullOrWhiteSpace(dto.Status) ? "Active" : dto.Status.Trim()
+        };
+
+        _context.Customers.Add(customer);
+        await _context.SaveChangesAsync();
+
+        return new CustomerDto
+        {
+            Id = customer.Id,
+            Name = customer.Name,
+            Status = customer.Status
+        };
+    }
+
+    public async Task<CustomerDto?> UpdateCustomerAsync(int id, UpdateCustomerDto dto)
+    {
+        var customer = await _context.Customers.FindAsync(id);
+        if (customer == null) return null;
+
+        customer.Name = dto.Name.Trim();
+        if (!string.IsNullOrWhiteSpace(dto.Status))
+        {
+            customer.Status = dto.Status.Trim();
+        }
+
+        await _context.SaveChangesAsync();
+
+        return new CustomerDto
+        {
+            Id = customer.Id,
+            Name = customer.Name,
+            Status = customer.Status
+        };
     }
 }

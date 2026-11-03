@@ -37,6 +37,9 @@ public class QtkdDbContext : DbContext
             entity.HasKey(c => c.Id);
             entity.Property(c => c.ContractNo).IsRequired().HasMaxLength(50);
             entity.Property(c => c.Status).IsRequired().HasMaxLength(50);
+            entity.Property(c => c.TotalAmount).HasPrecision(18, 2);
+            entity.Property(c => c.Terms).HasMaxLength(2000);
+            entity.Property(c => c.AttachmentUrl).HasMaxLength(500);
 
             entity.HasOne(c => c.Customer)
                   .WithMany(cust => cust.Contracts)
@@ -92,6 +95,9 @@ public class QtkdDbContext : DbContext
                 CustomerId = 1,
                 StartDate = DateTime.SpecifyKind(new DateTime(2026, 3, 1), DateTimeKind.Utc),
                 EndDate = DateTime.SpecifyKind(new DateTime(2027, 3, 1), DateTimeKind.Utc),
+                TotalAmount = 50000000m,
+                Terms = "Cung cấp giải pháp phần mềm Quản lý Kinh doanh trọn gói",
+                AttachmentUrl = "https://storage.qtkd.vn/contracts/HD-2026-018.pdf",
                 Status = "Draft"
             }
         );

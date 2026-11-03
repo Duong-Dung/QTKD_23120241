@@ -1,94 +1,111 @@
-# BÀI THỰC HÀNH TUẦN 05 - XÂY DỰNG NỀN TẢNG HỆ THỐNG QTKD
+# HỆ THỐNG QUẢN LÝ KINH DOANH (QTKD) - PHASE 2
+
 **Môn học:** Phát triển ứng dụng Hệ thống thông tin hiện đại  
-**Giai đoạn:** Phase 2 - Xây dựng hệ thống QTKD (Quản lý Kinh doanh)  
-**Công nghệ sử dụng:** C# · .NET (ASP.NET Core Web API) · Entity Framework Core · PostgreSQL · Swagger  
+**Sinh viên thực hiện:** Dương Việt Dũng - MSSV: 23120241  
+**GitHub Repository:** [Duong-Dung/QTKD_23120241](https://github.com/Duong-Dung/QTKD_23120241)  
+**Công nghệ:** C# · ASP.NET Core Web API 10 · Entity Framework Core · PostgreSQL · Swagger  
 
 ---
 
-## 1. Giới thiệu tổng quan
-Bài thực hành Tuần 05 tập trung vào việc tạo lập nền tảng kiến trúc cho hệ thống Quản lý Kinh doanh (QTKD):
-- Khởi tạo solution và project ASP.NET Core Web API có phân tầng rõ ràng (API, Nghiệp vụ, Truy cập dữ liệu).
-- Định nghĩa các thực thể cốt lõi: `Customer`, `Contract`, `PriceList`, `PriceItem` và các mối quan hệ (1 - N).
-- Cấu hình Entity Framework Core kết nối PostgreSQL.
-- Tạo Migration (`InitialCreate`) và nạp dữ liệu mẫu ban đầu (Seed Data).
-- Xây dựng các API cơ bản để đọc dữ liệu: `GET /api/customers`, `GET /api/contracts/{id}`, `GET /api/pricelists`.
+## 1. Giới thiệu tổng quan tiến độ các tuần
+
+| Tuần | Công việc chính | Trạng thái | Kết quả đạt được |
+|:---:|---|:---:|---|
+| **05** | Tạo dự án, cơ sở dữ liệu và API đọc dữ liệu | **Đã hoàn thành** | Khởi tạo Solution, cấu hình EF Core kết nối PostgreSQL, Seed Data (`Customer`, `Contract`, `PriceList`), viết các API đọc dữ liệu cơ bản. |
+| **06** | Viết các chức năng và kiểm tra quy tắc nghiệp vụ | **Đã hoàn thành** | Hoàn thiện CRUD Customer, Contract, Pricing; Lập trình kỹ lưỡng US03 (Gửi duyệt hợp đồng); Kiểm tra nghiêm ngặt CTR-01, CTR-02, CTR-03 và chống gửi trùng lặp (Yêu cầu 12). |
+| **07** | Viết kiểm thử (Unit test & Integration test) | *Sắp tới* | Viết bộ kiểm thử tự động xUnit cho CTR-01, CTR-02, CTR-03 và tích hợp API. |
 
 ---
 
-## 2. Sơ đồ kiến trúc & Thành phần của Solution
+## 2. Các tính năng và quy tắc nghiệp vụ hoàn thành trong Tuần 06
 
-### 2.1. Phân tầng kiến trúc (3-Layer Architecture cơ bản)
-Dự án được tổ chức rõ ràng theo nguyên tắc cơ bản, dễ hiểu cho người mới học nhưng vẫn đảm bảo tính độc lập giữa các tầng:
+### 2.1. Quản lý Khách hàng (Customer)
+- **API hỗ trợ:**
+  - `GET /api/customers`: Lấy danh sách tất cả khách hàng.
+  - `GET /api/customers/{id}`: Lấy thông tin chi tiết một khách hàng.
+  - `POST /api/customers`: Tạo khách hàng mới (kiểm tra bắt buộc tên, trạng thái mặc định `Active`).
+  - `PUT /api/customers/{id}`: Cập nhật thông tin khách hàng.
 
-```mermaid
-graph TD
-    Client["Client (Browser / Swagger / Postman)"]
-    
-    subgraph API_Layer ["1. Tầng API (Controllers)"]
-        CustomersController["CustomersController<br/>GET /api/customers"]
-        ContractsController["ContractsController<br/>GET /api/contracts/{id}"]
-        PriceListsController["PriceListsController<br/>GET /api/pricelists"]
-    end
+### 2.2. Quản lý Bảng giá & Mục giá (Pricing)
+- **API hỗ trợ:**
+  - `GET /api/pricelists`: Xem danh sách bảng giá và các mục giá.
+  - `GET /api/pricelists/{id}`: Xem chi tiết bảng giá theo Id.
+  - `POST /api/pricelists`: Tạo bảng giá mới.
+  - `POST /api/pricelists/{id}/items`: Thêm mục giá dịch vụ vào bảng giá (kiểm tra đơn giá `UnitPrice > 0`, bảng giá phải tồn tại).
+  - `GET /api/pricelists/{id}/items`: Lấy danh sách các mục giá thuộc bảng giá.
 
-    subgraph Service_Layer ["2. Tầng Nghiệp vụ (Services)"]
-        CustomerService["CustomerService<br/>(ICustomerService)"]
-        ContractService["ContractService<br/>(IContractService)"]
-        PriceListService["PriceListService<br/>(IPriceListService)"]
-    end
+### 2.3. Quản lý Hợp đồng & Xử lý nghiệp vụ chuyên sâu (Contract & US03)
+- **API hỗ trợ:**
+  - `GET /api/contracts`: Lấy danh sách hợp đồng.
+  - `GET /api/contracts/{id}`: Lấy chi tiết hợp đồng theo Id.
+  - `POST /api/contracts`: Tạo hợp đồng mới ở trạng thái `Draft` (kiểm tra ngày hiệu lực `StartDate < EndDate`, không trùng số hợp đồng).
+  - `PUT /api/contracts/{id}`: Cập nhật thông tin hợp đồng (**Tuân thủ CTR-01**).
+  - `POST /api/contracts/{id}/submit`: Gửi hợp đồng trình duyệt (**User Story US03 / CTR-01, 02, 03**).
 
-    subgraph Data_Layer ["3. Tầng Truy cập dữ liệu (Data & Entities)"]
-        DbContext["QtkdDbContext<br/>(EF Core)"]
-        Entities["Entities:<br/>Customer, Contract, PriceList, PriceItem"]
-    end
+### 2.4. Bảng đối chiếu các quy tắc nghiệp vụ cốt lõi
 
-    subgraph Database ["Cơ sở dữ liệu"]
-        Postgres[(PostgreSQL)]
-    end
+| Mã quy tắc | Ý nghĩa nghiệp vụ | Cách kiểm tra trong hệ thống | Kết quả xử lý |
+|---|---|---|---|
+| **CTR-01** | Chỉ cho phép chỉnh sửa hợp đồng khi ở trạng thái `Draft` hoặc `Revision Requested`. | Thử gửi `PUT /api/contracts/{id}` khi hợp đồng ở trạng thái `PendingApproval`. | Trả về `400 Bad Request`, từ chối chỉnh sửa và bảo vệ dữ liệu. |
+| **CTR-02** | Chỉ cho gửi trình duyệt khi Customer hợp lệ (`Active`), ngày hiệu lực hợp lệ, nội dung điều khoản (`Terms`) và tệp tài liệu đính kèm (`AttachmentUrl`) đầy đủ, giá trị `TotalAmount > 0`. | Gửi `POST /api/contracts/{id}/submit` khi hợp đồng thiếu tệp đính kèm hoặc `TotalAmount = 0`. | Trả về `400 Bad Request` kèm danh sách lỗi cụ thể; trạng thái hợp đồng vẫn giữ nguyên là `Draft`. |
+| **CTR-03** | Không được chuyển `Draft` thẳng sang `Approved`. | Khi gửi trình duyệt hợp lệ qua `POST /api/contracts/{id}/submit`. | Trạng thái chỉ được chuyển sang `PendingApproval`. Không có API nào cho phép nhảy cóc sang `Approved`. |
+| **Yêu cầu 12** | Ngăn chặn gửi trình duyệt trùng lặp (Idempotency). | Gửi `POST /api/contracts/{id}/submit` lần thứ hai khi hợp đồng đã ở `PendingApproval`. | Trả về `400 Bad Request` thông báo hợp đồng đã được trình duyệt trước đó. |
 
-    Client -->|HTTP Request| API_Layer
-    API_Layer -->|Gọi hàm nghiệp vụ| Service_Layer
-    Service_Layer -->|Truy vấn dữ liệu| DbContext
-    DbContext --> Entities
-    DbContext -->|Npgsql| Database
+---
+
+## 3. Kiến trúc hệ thống & Cấu trúc thư mục
+
+### 3.1. Phân tầng kiến trúc
+Dự án được tổ chức theo mô hình phân tầng hướng đối tượng chuẩn ASP.NET Core:
+1. **Tầng API (Controllers):** `CustomersController`, `ContractsController`, `PriceListsController` tiếp nhận HTTP request, validate Model và định dạng phản hồi chuẩn qua `ApiResponse<T>`.
+2. **Tầng Nghiệp vụ (Services):** `CustomerService`, `ContractService`, `PriceListService` kiểm tra toàn bộ business rules (CTR-01, CTR-02, CTR-03).
+3. **Tầng Dữ liệu (Data & Entities):** `QtkdDbContext` sử dụng Entity Framework Core kết nối PostgreSQL.
+
+### 3.2. Cấu trúc thư mục dự án
 ```
-
-### 2.2. Chi tiết cấu trúc thư mục
-```
-23120241_TH5/
-├── QTKD.sln                       # Solution chứa dự án
-├── docker-compose.yml             # File chạy nhanh PostgreSQL qua Docker (tùy chọn)
-├── README.md                      # Hướng dẫn chi tiết
-└── QTKD.Api/                      # Project ASP.NET Core Web API
-    ├── Controllers/               # [Tầng API] Tiếp nhận HTTP Request và phản hồi HTTP Response
+23120241_TH6/
+├── QTKD.sln                               # Visual Studio / .NET Solution
+├── docker-compose.yml                     # Cấu hình PostgreSQL chạy container
+├── README.md                              # Hướng dẫn tổng quan & báo cáo thực hành
+├── docs/                                  # Tài liệu chi tiết theo quy định nộp bài
+│   ├── API_DOCUMENTATION.md               # Tài liệu chi tiết toàn bộ Endpoint, Request/Response mẫu
+│   ├── BUSINESS_RULES_MAPPING.md          # Bảng đối chiếu US03, CTR-01, CTR-02, CTR-03 với code
+│   └── DEMO_SCENARIO.md                   # Kịch bản thực hiện từng bước luồng demo tuần 06
+└── QTKD.Api/                              # Dự án ASP.NET Core Web API
+    ├── Controllers/                       # [API Layer]
     │   ├── CustomersController.cs
     │   ├── ContractsController.cs
     │   └── PriceListsController.cs
-    ├── Services/                  # [Tầng Nghiệp vụ] Xử lý logic và nghiệp vụ
+    ├── Services/                          # [Business Logic Layer]
     │   ├── ICustomerService.cs & CustomerService.cs
     │   ├── IContractService.cs & ContractService.cs
     │   └── IPriceListService.cs & PriceListService.cs
-    ├── Data/                      # [Tầng Dữ liệu] DbContext và cấu hình EF Core
+    ├── Data/                              # [Data Access Layer]
     │   └── QtkdDbContext.cs
-    ├── Entities/                  # [Mô hình dữ liệu] Các thực thể (Models)
+    ├── Entities/                          # [Domain Models]
     │   ├── Customer.cs
-    │   ├── Contract.cs
+    │   ├── Contract.cs                    # Bổ sung TotalAmount, Terms, AttachmentUrl, SubmittedAt
     │   ├── PriceList.cs
     │   └── PriceItem.cs
-    ├── DTOs/                      # Data Transfer Objects trao đổi qua API
+    ├── DTOs/                              # [Data Transfer Objects & API Response Wrapper]
+    │   ├── ApiResponse.cs                 # Mẫu chuẩn hóa kết quả phản hồi API
     │   ├── CustomerDto.cs
     │   ├── ContractDto.cs
     │   └── PriceListDto.cs
-    ├── Migrations/                # EF Core Migration tự động sinh
-    │   └── ..._InitialCreate.cs
-    ├── appsettings.json           # Cấu hình chuỗi kết nối PostgreSQL
-    ├── appsettings.Example.json   # Bản mẫu cấu hình (không chứa mật khẩu thật)
-    ├── Program.cs                 # Điểm khởi chạy ứng dụng & Dependency Injection
-    └── QTKD.Api.http              # File test nhanh API bằng REST Client
+    ├── Exceptions/                        # [Ngoại lệ nghiệp vụ]
+    │   └── BusinessRuleException.cs
+    ├── Migrations/                        # [EF Core Migrations]
+    │   ├── 20261027030137_InitialCreate.cs
+    │   └── 20261103133532_AddContractFieldsForWeek06.cs   # Migration bổ sung Tuần 06
+    ├── appsettings.json                   # Cấu hình kết nối DB
+    ├── appsettings.Example.json           # Cấu hình mẫu an toàn
+    ├── Program.cs                         # Điểm vào ứng dụng & DI
+    └── QTKD.Api.http                      # Bộ kịch bản kiểm thử API trực tiếp
 ```
 
 ---
 
-## 3. Mô hình dữ liệu & Quan hệ thực thể (ERD)
+## 4. Mô hình dữ liệu cập nhật (ERD)
 
 ```mermaid
 erDiagram
@@ -105,9 +122,13 @@ erDiagram
         int Id PK
         string ContractNo "Số hợp đồng (VD: HD-2026-018)"
         int CustomerId FK "Khóa ngoại trỏ đến Customer"
-        datetime StartDate "Ngày bắt đầu"
-        datetime EndDate "Ngày kết thúc"
-        string Status "Trạng thái (Draft,...)"
+        datetime StartDate "Ngày bắt đầu hiệu lực"
+        datetime EndDate "Ngày kết thúc hiệu lực"
+        decimal TotalAmount "Giá trị hợp đồng (VNĐ)"
+        string Terms "Nội dung điều khoản bắt buộc"
+        string AttachmentUrl "Đường dẫn tệp tài liệu đính kèm"
+        string Status "Trạng thái (Draft, PendingApproval,...)"
+        datetime SubmittedAt "Thời điểm gửi duyệt"
     }
 
     PriceList {
@@ -120,162 +141,65 @@ erDiagram
         int Id PK
         int PriceListId FK "Khóa ngoại trỏ đến PriceList"
         string ServiceCode "Mã dịch vụ"
-        decimal UnitPrice "Đơn giá"
+        decimal UnitPrice "Đơn giá (> 0)"
     }
 ```
-
----
-
-## 4. Dữ liệu mẫu ban đầu (Seed Data)
-Được cấu hình tự động trong Migration `InitialCreate` theo sát kịch bản đề bài:
-1. **Khách hàng (Customer):**
-   - `Id = 1`: Tên *"Công ty TNHH Minh Phát"*, Trạng thái: `Active`.
-   - `Id = 2`: Tên *"Công ty Cổ phần Hoàng Gia"*, Trạng thái: `Active`.
-2. **Hợp đồng (Contract):**
-   - `Id = 1`: Số hợp đồng *"HD-2026-018"*, `CustomerId = 1` (Minh Phát), `StartDate = 2026-03-01`, `EndDate = 2027-03-01`, Trạng thái: `Draft`.
-3. **Bảng giá (PriceList & PriceItem):**
-   - Bảng giá `Id = 1`: *"Bảng giá dịch vụ phần mềm 2026"*, Ngày hiệu lực: `2026-01-01`.
-   - Mục giá 1: Mã dịch vụ `SRV-CLOUD`, Đơn giá: `1.500.000 VNĐ`.
-   - Mục giá 2: Mã dịch vụ `SRV-SUPPORT`, Đơn giá: `500.000 VNĐ`.
 
 ---
 
 ## 5. Hướng dẫn cài đặt và chạy ứng dụng
 
 ### Bước 1: Khởi động cơ sở dữ liệu PostgreSQL
-Có 2 cách:
-- **Cách A (Dùng Docker Compose - Tiện lợi nhất):**
-  Tại thư mục gốc dự án, mở terminal chạy:
+- Nếu dùng Docker Compose:
   ```bash
   docker compose up -d
   ```
-- **Cách B (Dùng PostgreSQL cài trực tiếp trên máy):**
-  Tạo sẵn một database tên là `qtkd_db` trong PostgreSQL:
-  ```sql
-  CREATE DATABASE qtkd_db;
-  ```
+- Hoặc kết nối tới máy chủ PostgreSQL nội bộ trên cổng phù hợp (mặc định cấu hình cổng 5432 hoặc 5433 trong `appsettings.json`).
 
-### Bước 2: Cấu hình chuỗi kết nối
-Mở file [appsettings.json](file:///d:/download/23120241_TH5/QTKD.Api/appsettings.json), chỉnh sửa thông tin đăng nhập PostgreSQL cho phù hợp với máy của bạn:
-```json
-{
-  "ConnectionStrings": {
-    "DefaultConnection": "Host=localhost;Port=5433;Database=qtkd_db;Username=postgres;Password=postgres"
-  }
-}
-```
-> **Lưu ý bảo mật:** Dự án đã có file `appsettings.Example.json` làm mẫu. Khi đẩy mã nguồn lên Git công khai, tránh đưa mật khẩu thực tế lên repository.
-
-### Bước 3: Chạy Migration để tạo bảng và dữ liệu mẫu
-Mở terminal tại thư mục gốc dự án và thực hiện lệnh:
+### Bước 2: Áp dụng Migration cập nhật cơ sở dữ liệu
+Tại thư mục gốc dự án, thực hiện lệnh:
 ```bash
 dotnet ef database update --project QTKD.Api
 ```
-EF Core sẽ tự động kết nối vào PostgreSQL, tạo các bảng `Customers`, `Contracts`, `PriceLists`, `PriceItems` cùng các ràng buộc khóa chính/khóa ngoại và nạp dữ liệu mẫu ban đầu.
+Lệnh này sẽ tự động chạy cả `InitialCreate` và `AddContractFieldsForWeek06`, tạo đầy đủ các bảng, các cột mới và nạp dữ liệu mẫu ban đầu.
 
-### Bước 4: Khởi động Web API
-Chạy lệnh:
+### Bước 3: Khởi động Web API
 ```bash
 dotnet run --project QTKD.Api
 ```
-Khi ứng dụng khởi động thành công, giao diện Swagger UI sẽ sẵn sàng tại:
-`https://localhost:<port>/swagger` (hoặc `http://localhost:<port>/swagger`).
+Sau khi khởi động, truy cập giao diện Swagger UI trực quan tại:
+`http://localhost:5293/swagger` (hoặc cổng được hiển thị trên console).
 
 ---
 
-## 6. Kiểm tra các Endpoint API
+## 6. Hướng dẫn chạy thử Luồng Demo Tuần 06 (Mục 4.3 - Bước 13)
 
-### 6.1. Endpoint 1: Lấy danh sách khách hàng
-- **Phương thức:** `GET`
-- **URL:** `http://localhost:<port>/api/customers`
-- **Kết quả JSON mẫu:**
-```json
-[
-  {
-    "id": 1,
-    "name": "Công ty TNHH Minh Phát",
-    "status": "Active"
-  },
-  {
-    "id": 2,
-    "name": "Công ty Cổ phần Hoàng Gia",
-    "status": "Active"
-  }
-]
-```
+Để thực hiện kiểm tra luồng xuyên suốt đề bài yêu cầu:
+1. Mở file [QTKD.Api/QTKD.Api.http](file:///d:/download/23120241_TH6/QTKD.Api/QTKD.Api.http) trên VS Code hoặc truy cập giao diện Swagger UI.
+2. Thực hiện lần lượt 6 bước theo kịch bản:
+   - **Bước 1 (Tạo Customer):** Gửi `POST /api/customers` để tạo khách hàng mới.
+   - **Bước 2 (Tạo Contract Draft):** Gửi `POST /api/contracts` tạo hợp đồng còn thiếu tài liệu và giá trị.
+   - **Bước 3 (Gửi khi thiếu dữ liệu):** Gửi `POST /api/contracts/{id}/submit` -> Hệ thống báo lỗi HTTP `400 Bad Request` do vi phạm CTR-02 (thiếu tệp đính kèm và giá trị <= 0), hợp đồng vẫn giữ nguyên trạng thái `Draft`.
+   - **Bước 4 (Bổ sung dữ liệu):** Gửi `PUT /api/contracts/{id}` bổ sung `totalAmount`, `terms`, `attachmentUrl` -> Hệ thống trả về `200 OK` cập nhật thành công (CTR-01).
+   - **Bước 5 (Gửi lại thành công):** Gửi `POST /api/contracts/{id}/submit` -> Hệ thống trả về `200 OK`, chuyển trạng thái sang `PendingApproval` (CTR-03).
+   - **Bước 6 (Xem trạng thái):** Gửi `GET /api/contracts/{id}` xác nhận trạng thái là `PendingApproval` và có `submittedAt`.
+3. Kiểm tra thêm các tình huống bảo vệ:
+   - Thử sửa hợp đồng vừa chuyển sang `PendingApproval` -> Bị chặn bởi CTR-01.
+   - Thử gửi duyệt lại hợp đồng vừa chuyển sang `PendingApproval` -> Bị chặn bởi cơ chế chống gửi lặp (Yêu cầu 12).
 
-### 6.2. Endpoint 2: Lấy chi tiết hợp đồng theo Id
-- **Phương thức:** `GET`
-- **URL:** `http://localhost:<port>/api/contracts/1`
-- **Kết quả JSON mẫu:**
-```json
-{
-  "id": 1,
-  "contractNo": "HD-2026-018",
-  "customerId": 1,
-  "customerName": "Công ty TNHH Minh Phát",
-  "startDate": "2026-03-01T00:00:00Z",
-  "endDate": "2027-03-01T00:00:00Z",
-  "status": "Draft"
-}
-```
-*(Nếu gọi với Id không tồn tại, ví dụ `/api/contracts/999`, API sẽ trả về `404 Not Found` kèm thông báo).*
-
-### 6.3. Endpoint phụ: Lấy danh sách bảng giá và chi tiết giá
-- **Phương thức:** `GET`
-- **URL:** `http://localhost:<port>/api/pricelists`
-- **Kết quả JSON mẫu:**
-```json
-[
-  {
-    "id": 1,
-    "name": "Bảng giá dịch vụ phần mềm 2026",
-    "effectiveDate": "2026-01-01T00:00:00Z",
-    "items": [
-      {
-        "id": 1,
-        "serviceCode": "SRV-CLOUD",
-        "unitPrice": 1500000.00
-      },
-      {
-        "id": 2,
-        "serviceCode": "SRV-SUPPORT",
-        "unitPrice": 500000.00
-      }
-    ]
-  }
-]
-```
+*(Xem hướng dẫn chi tiết tại [docs/DEMO_SCENARIO.md](file:///d:/download/23120241_TH6/docs/DEMO_SCENARIO.md))*.
 
 ---
 
-## 7. Đối chiếu kết quả với dữ liệu trong PostgreSQL
-Bạn có thể mở công cụ quản lý PostgreSQL (pgAdmin / DBeaver / psql) và chạy các câu lệnh sau để đối chiếu dữ liệu:
-
-```sql
--- 1. Xem danh sách khách hàng
-SELECT * FROM "Customers";
-
--- 2. Xem danh sách hợp đồng
-SELECT c."Id", c."ContractNo", c."Status", cust."Name" AS "CustomerName"
-FROM "Contracts" c
-JOIN "Customers" cust ON c."CustomerId" = cust."Id";
-
--- 3. Xem bảng giá và các mục giá
-SELECT pl."Name", pi."ServiceCode", pi."UnitPrice"
-FROM "PriceLists" pl
-JOIN "PriceItems" pi ON pl."Id" = pi."PriceListId";
-```
-
-Kết quả trả về từ database hoàn toàn khớp với kết quả từ các API endpoints!
-
----
-
-## 8. Danh mục nghiệm thu nộp bài Tuần 05
-- [x] Tạo solution `QTKD` và project `QTKD.Api` với cấu trúc phân tầng rõ ràng (API, Nghiệp vụ, Truy cập dữ liệu).
-- [x] Tạo đầy đủ các entity: `Customer`, `Contract`, `PriceList`, `PriceItem` với quan hệ 1-N.
-- [x] Cấu hình `QtkdDbContext` và chuỗi kết nối PostgreSQL.
-- [x] Tạo Migration đầu tiên (`InitialCreate`) và Seed Data mẫu đúng theo kịch bản xuyên suốt (Công ty Minh Phát, Hợp đồng HD-2026-018 ở trạng thái Draft, Bảng giá có 2 mục giá).
-- [x] Viết đầy đủ API: `GET /api/customers` và `GET /api/contracts/{id}`.
-- [x] Tích hợp Swagger UI hỗ trợ chạy thử và kiểm tra trực quan.
-- [x] Viết tài liệu `README.md` hướng dẫn chi tiết từ A-Z và sơ đồ kiến trúc.
+## 7. Danh mục nghiệm thu nộp bài Tuần 06
+- [x] Kế thừa toàn bộ cơ sở dữ liệu và mã nguồn Tuần 05.
+- [x] Tạo Migration bổ sung `AddContractFieldsForWeek06` cho thực thể Contract.
+- [x] Viết đầy đủ các API CRUD cho Customer, Contract và Pricing.
+- [x] Cài đặt hoàn chỉnh User Story US03 (`POST /api/contracts/{id}/submit`).
+- [x] Kiểm tra và bảo vệ nghiêm ngặt quy tắc CTR-01 (chỉ sửa ở Draft/Revision Requested).
+- [x] Kiểm tra và bảo vệ nghiêm ngặt quy tắc CTR-02 (kiểm tra Customer Active, ngày hiệu lực, terms, tệp đính kèm, totalAmount).
+- [x] Đảm bảo tuân thủ CTR-03 (không chuyển thẳng từ Draft sang Approved, chỉ chuyển sang PendingApproval).
+- [x] Xử lý chống gửi duyệt trùng lặp (Yêu cầu 12).
+- [x] Thống nhất định dạng phản hồi API qua `ApiResponse<T>`.
+- [x] Cập nhật bộ test nhanh trong file `QTKD.Api.http`.
+- [x] Bố trí thư mục `docs/` chứa tài liệu API, bảng đối chiếu quy tắc nghiệp vụ và kịch bản demo theo đúng chuẩn nộp bài.

@@ -1,17 +1,178 @@
 @QTKD.Api_HostAddress = http://localhost:5293
 
-### 1. Lấy danh sách tất cả khách hàng
+###############################################################################
+# PHẦN 1: QUẢN LÝ KHÁCH HÀNG (CUSTOMER)
+###############################################################################
+
+### 1.1. Lấy danh sách tất cả khách hàng
 GET {{QTKD.Api_HostAddress}}/api/customers
 Accept: application/json
 
-### 2. Lấy thông tin hợp đồng theo Id (Hợp đồng HD-2026-018 của Công ty Minh Phát)
+### 1.2. Lấy thông tin chi tiết khách hàng theo Id = 1 (Công ty Minh Phát)
+GET {{QTKD.Api_HostAddress}}/api/customers/1
+Accept: application/json
+
+### 1.3. Tạo khách hàng mới hợp lệ (Công ty Cổ phần Công nghệ ABC)
+POST {{QTKD.Api_HostAddress}}/api/customers
+Content-Type: application/json
+
+{
+  "name": "Công ty Cổ phần Công nghệ ABC",
+  "status": "Active"
+}
+
+### 1.4. Thử tạo khách hàng thất bại (Tên rỗng - Kiểm tra validation)
+POST {{QTKD.Api_HostAddress}}/api/customers
+Content-Type: application/json
+
+{
+  "name": "",
+  "status": "Active"
+}
+
+### 1.5. Cập nhật thông tin khách hàng Id = 1
+PUT {{QTKD.Api_HostAddress}}/api/customers/1
+Content-Type: application/json
+
+{
+  "name": "Công ty TNHH Minh Phát - Chi nhánh Hà Nội",
+  "status": "Active"
+}
+
+
+###############################################################################
+# PHẦN 2: QUẢN LÝ HỢP ĐỒNG (CONTRACT) & LUỒNG US03 / CTR-01, 02, 03
+###############################################################################
+
+### 2.1. Lấy danh sách tất cả hợp đồng
+GET {{QTKD.Api_HostAddress}}/api/contracts
+Accept: application/json
+
+### 2.2. Lấy chi tiết hợp đồng Id = 1 (HD-2026-018)
 GET {{QTKD.Api_HostAddress}}/api/contracts/1
 Accept: application/json
 
-### 3. Thử lấy hợp đồng không tồn tại (Kiểm tra trả về 404 Not Found)
-GET {{QTKD.Api_HostAddress}}/api/contracts/999
+### ===========================================================================
+### LUỒNG DEMO THEO ĐỀ BÀI (MỤC 4.3 - BƯỚC 13)
+### Bước 1: Tạo Customer -> Bước 2: Tạo Contract Draft -> Bước 3: Gửi thiếu dữ liệu (fail)
+### -> Bước 4: Bổ sung dữ liệu -> Bước 5: Gửi lại (thành công) -> Bước 6: Xem trạng thái
+### ===========================================================================
+
+### [BƯỚC 1]: Tạo khách hàng mới cho luồng demo
+# @name createCustomerDemo
+POST {{QTKD.Api_HostAddress}}/api/customers
+Content-Type: application/json
+
+{
+  "name": "Tập đoàn VinaTech Demo Tuần 06",
+  "status": "Active"
+}
+
+### [BƯỚC 2]: Tạo hợp đồng mới ở trạng thái Draft (còn thiếu file đính kèm và giá trị = 0)
+# @name createContractDemo
+POST {{QTKD.Api_HostAddress}}/api/contracts
+Content-Type: application/json
+
+{
+  "contractNo": "HD-2026-DEMO-01",
+  "customerId": 1,
+  "startDate": "2026-04-01T00:00:00Z",
+  "endDate": "2027-04-01T00:00:00Z",
+  "totalAmount": 0,
+  "terms": "",
+  "attachmentUrl": ""
+}
+
+### [BƯỚC 3]: Thử gửi trình duyệt khi thiếu dữ liệu bắt buộc (CTR-02)
+# Kết quả mong đợi: 400 Bad Request, trả về danh sách lỗi cụ thể, hợp đồng vẫn giữ nguyên trạng thái Draft
+POST {{QTKD.Api_HostAddress}}/api/contracts/2/submit
 Accept: application/json
 
-### 4. Lấy danh sách bảng giá và chi tiết giá dịch vụ
+### [BƯỚC 4]: Bổ sung đầy đủ thông tin còn thiếu cho hợp đồng (giá trị, điều khoản, tệp đính kèm)
+# Kết quả mong đợi: 200 OK, cập nhật thành công vì hợp đồng đang ở trạng thái Draft
+PUT {{QTKD.Api_HostAddress}}/api/contracts/2
+Content-Type: application/json
+
+{
+  "contractNo": "HD-2026-DEMO-01",
+  "startDate": "2026-04-01T00:00:00Z",
+  "endDate": "2027-04-01T00:00:00Z",
+  "totalAmount": 120000000,
+  "terms": "Cung cấp bản quyền giải pháp Quản lý Kinh doanh Cloud và dịch vụ hỗ trợ kỹ thuật 24/7",
+  "attachmentUrl": "https://storage.qtkd.vn/contracts/HD-2026-DEMO-01.pdf"
+}
+
+### [BƯỚC 5]: Gửi lại hợp đồng trình duyệt sau khi đã bổ sung đầy đủ thông tin
+# Kết quả mong đợi: 200 OK, CTR-03 chuyển từ Draft sang PendingApproval
+POST {{QTKD.Api_HostAddress}}/api/contracts/2/submit
+Accept: application/json
+
+### [BƯỚC 6]: Xem lại thông tin hợp đồng sau khi gửi trình duyệt thành công
+# Kết quả mong đợi: 200 OK, status = "PendingApproval", có thời gian submittedAt
+GET {{QTKD.Api_HostAddress}}/api/contracts/2
+Accept: application/json
+
+
+### ===========================================================================
+### KIỂM TRA CÁC QUY TẮC NGHIỆP VỤ BẢO VỆ (CTR-01, CTR-02, YÊU CẦU 12)
+### ===========================================================================
+
+### [KIỂM TRA CTR-01]: Thử sửa hợp đồng đang ở trạng thái PendingApproval
+# Kết quả mong đợi: 400 Bad Request - Từ chối chỉnh sửa
+PUT {{QTKD.Api_HostAddress}}/api/contracts/2
+Content-Type: application/json
+
+{
+  "totalAmount": 999999999,
+  "terms": "Cố tình sửa đổi hợp đồng đã trình duyệt"
+}
+
+### [KIỂM TRA YÊU CẦU 12]: Thử gửi lặp lại hợp đồng đã ở trạng thái PendingApproval
+# Kết quả mong đợi: 400 Bad Request - Từ chối gửi trùng lặp
+POST {{QTKD.Api_HostAddress}}/api/contracts/2/submit
+Accept: application/json
+
+
+###############################################################################
+# PHẦN 3: QUẢN LÝ BẢNG GIÁ & MỤC GIÁ (PRICING)
+###############################################################################
+
+### 3.1. Lấy danh sách bảng giá và các chi tiết giá
 GET {{QTKD.Api_HostAddress}}/api/pricelists
+Accept: application/json
+
+### 3.2. Lấy chi tiết bảng giá Id = 1
+GET {{QTKD.Api_HostAddress}}/api/pricelists/1
+Accept: application/json
+
+### 3.3. Tạo bảng giá mới
+POST {{QTKD.Api_HostAddress}}/api/pricelists
+Content-Type: application/json
+
+{
+  "name": "Bảng giá Dịch vụ Hạ tầng Cloud 2026 - 2027",
+  "effectiveDate": "2026-06-01T00:00:00Z"
+}
+
+### 3.4. Thêm mục giá dịch vụ hợp lệ vào bảng giá Id = 1
+POST {{QTKD.Api_HostAddress}}/api/pricelists/1/items
+Content-Type: application/json
+
+{
+  "serviceCode": "SRV-SECURITY",
+  "unitPrice": 2500000
+}
+
+### 3.5. Thử thêm mục giá dịch vụ với đơn giá không hợp lệ (<= 0)
+# Kết quả mong đợi: 400 Bad Request
+POST {{QTKD.Api_HostAddress}}/api/pricelists/1/items
+Content-Type: application/json
+
+{
+  "serviceCode": "SRV-INVALID",
+  "unitPrice": -1000
+}
+
+### 3.6. Lấy danh sách các mục giá thuộc bảng giá Id = 1
+GET {{QTKD.Api_HostAddress}}/api/pricelists/1/items
 Accept: application/json

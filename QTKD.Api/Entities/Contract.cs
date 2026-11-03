@@ -10,7 +10,11 @@ public class Contract
     public int CustomerId { get; set; }
     public DateTime StartDate { get; set; }
     public DateTime EndDate { get; set; }
-    public string Status { get; set; } = "Draft";
+    public decimal TotalAmount { get; set; } = 0m;
+    public string? Terms { get; set; }
+    public string? AttachmentUrl { get; set; }
+    public string Status { get; set; } = "Draft"; // Draft, PendingApproval, Revision Requested, Approved, Rejected
+    public DateTime? SubmittedAt { get; set; }
 
     // Khóa ngoại liên kết tới Customer
     public Customer? Customer { get; set; }

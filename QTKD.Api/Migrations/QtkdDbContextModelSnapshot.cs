@@ -30,6 +30,10 @@ namespace QTKD.Api.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
+                    b.Property<string>("AttachmentUrl")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
                     b.Property<string>("ContractNo")
                         .IsRequired()
                         .HasMaxLength(50)
@@ -49,6 +53,17 @@ namespace QTKD.Api.Migrations
                         .HasMaxLength(50)
                         .HasColumnType("character varying(50)");
 
+                    b.Property<DateTime?>("SubmittedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Terms")
+                        .HasMaxLength(2000)
+                        .HasColumnType("character varying(2000)");
+
+                    b.Property<decimal>("TotalAmount")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("numeric(18,2)");
+
                     b.HasKey("Id");
 
                     b.HasIndex("CustomerId");
@@ -59,11 +74,14 @@ namespace QTKD.Api.Migrations
                         new
                         {
                             Id = 1,
+                            AttachmentUrl = "https://storage.qtkd.vn/contracts/HD-2026-018.pdf",
                             ContractNo = "HD-2026-018",
                             CustomerId = 1,
                             EndDate = new DateTime(2027, 3, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             StartDate = new DateTime(2026, 3, 1, 0, 0, 0, 0, DateTimeKind.Utc),
-                            Status = "Draft"
+                            Status = "Draft",
+                            Terms = "Cung cấp giải pháp phần mềm Quản lý Kinh doanh trọn gói",
+                            TotalAmount = 50000000m
                         });
                 });
 
