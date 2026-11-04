@@ -13,3 +13,4 @@ public interface IPriceListService
     Task<PriceItemDto> AddPriceItemAsync(int priceListId, CreatePriceItemDto dto);
     Task<IEnumerable<PriceItemDto>> GetPriceItemsByPriceListIdAsync(int priceListId);
 }
+

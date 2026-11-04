@@ -17,3 +17,4 @@ public class BusinessRuleException : Exception
         Errors = errors ?? new List<string> { message };
     }
 }
+
