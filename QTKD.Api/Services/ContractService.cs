@@ -116,6 +116,14 @@ public class ContractService : IContractService
                 "Chỉ cho phép sửa hợp đồng khi ở trạng thái 'Draft' hoặc 'Revision Requested'.");
         }
 
+        // [QUY TẮC CTR-03] Không được phép tự ý thay đổi trạng thái qua cập nhật, đặc biệt không được chuyển từ Draft sang Approved
+        if (!string.IsNullOrWhiteSpace(dto.Status) && !string.Equals(dto.Status, contract.Status, StringComparison.OrdinalIgnoreCase))
+        {
+            throw new BusinessRuleException(
+                $"[CTR-03] Không được phép tự ý thay đổi trực tiếp trạng thái hợp đồng sang '{dto.Status}' (không được chuyển thẳng sang Approved). " +
+                "Trạng thái hợp đồng chỉ được chuyển sang PendingApproval thông qua quy trình gửi trình duyệt.");
+        }
+
         // Kiểm tra số hợp đồng nếu có thay đổi
         if (!string.IsNullOrWhiteSpace(dto.ContractNo) && !dto.ContractNo.Equals(contract.ContractNo, StringComparison.OrdinalIgnoreCase))
         {
@@ -139,7 +147,14 @@ public class ContractService : IContractService
 
         if (dto.StartDate.HasValue) contract.StartDate = effectiveStart;
         if (dto.EndDate.HasValue) contract.EndDate = effectiveEnd;
-        if (dto.TotalAmount.HasValue) contract.TotalAmount = dto.TotalAmount.Value;
+        if (dto.TotalAmount.HasValue)
+        {
+            if (dto.TotalAmount.Value < 0)
+            {
+                throw new BusinessRuleException("Giá trị hợp đồng không thể âm.");
+            }
+            contract.TotalAmount = dto.TotalAmount.Value;
+        }
         if (dto.Terms != null) contract.Terms = dto.Terms.Trim();
         if (dto.AttachmentUrl != null) contract.AttachmentUrl = dto.AttachmentUrl.Trim();
 

@@ -42,3 +42,7 @@ app.UseAuthorization();
 app.MapControllers();
 
 app.Run();
+
+// Cho phép WebApplicationFactory trong xUnit Integration Tests truy cập Program
+public partial class Program { }
+

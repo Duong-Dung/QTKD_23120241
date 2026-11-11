@@ -64,6 +64,11 @@ public class UpdateContractDto
     public string? Terms { get; set; }
 
     public string? AttachmentUrl { get; set; }
+
+    /// <summary>
+    /// Trường trạng thái để kiểm tra quy tắc CTR-03 (ngăn cản việc chuyển trạng thái bất hợp lệ sang Approved)
+    /// </summary>
+    public string? Status { get; set; }
 }
 
 /// <summary>

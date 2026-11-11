@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using QTKD.Api.Data;
 using QTKD.Api.DTOs;
 using QTKD.Api.Entities;
+using QTKD.Api.Exceptions;
 
 namespace QTKD.Api.Services;
 
@@ -48,6 +49,11 @@ public class CustomerService : ICustomerService
 
     public async Task<CustomerDto> CreateCustomerAsync(CreateCustomerDto dto)
     {
+        if (string.IsNullOrWhiteSpace(dto.Name))
+        {
+            throw new BusinessRuleException("Tên khách hàng không được để trống.");
+        }
+
         var customer = new Customer
         {
             Name = dto.Name.Trim(),
@@ -69,6 +75,11 @@ public class CustomerService : ICustomerService
     {
         var customer = await _context.Customers.FindAsync(id);
         if (customer == null) return null;
+
+        if (string.IsNullOrWhiteSpace(dto.Name))
+        {
+            throw new BusinessRuleException("Tên khách hàng không được để trống.");
+        }
 
         customer.Name = dto.Name.Trim();
         if (!string.IsNullOrWhiteSpace(dto.Status))

@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using QTKD.Api.DTOs;
+using QTKD.Api.Exceptions;
 using QTKD.Api.Services;
 
 namespace QTKD.Api.Controllers;
@@ -60,8 +61,15 @@ public class CustomersController : ControllerBase
             return BadRequest(ApiResponse<CustomerDto>.Fail("Dữ liệu khách hàng không hợp lệ", errors));
         }
 
-        var created = await _customerService.CreateCustomerAsync(dto);
-        return CreatedAtAction(nameof(GetById), new { id = created.Id }, ApiResponse<CustomerDto>.Ok(created, "Tạo khách hàng thành công"));
+        try
+        {
+            var created = await _customerService.CreateCustomerAsync(dto);
+            return CreatedAtAction(nameof(GetById), new { id = created.Id }, ApiResponse<CustomerDto>.Ok(created, "Tạo khách hàng thành công"));
+        }
+        catch (BusinessRuleException ex)
+        {
+            return BadRequest(ApiResponse<CustomerDto>.Fail(ex.Message, ex.Errors));
+        }
     }
 
     /// <summary>
@@ -80,12 +88,19 @@ public class CustomersController : ControllerBase
             return BadRequest(ApiResponse<CustomerDto>.Fail("Dữ liệu cập nhật không hợp lệ", errors));
         }
 
-        var updated = await _customerService.UpdateCustomerAsync(id, dto);
-        if (updated == null)
+        try
         {
-            return NotFound(ApiResponse<CustomerDto>.Fail($"Không tìm thấy khách hàng với mã Id = {id}"));
-        }
+            var updated = await _customerService.UpdateCustomerAsync(id, dto);
+            if (updated == null)
+            {
+                return NotFound(ApiResponse<CustomerDto>.Fail($"Không tìm thấy khách hàng với mã Id = {id}"));
+            }
 
-        return Ok(ApiResponse<CustomerDto>.Ok(updated, "Cập nhật khách hàng thành công"));
+            return Ok(ApiResponse<CustomerDto>.Ok(updated, "Cập nhật khách hàng thành công"));
+        }
+        catch (BusinessRuleException ex)
+        {
+            return BadRequest(ApiResponse<CustomerDto>.Fail(ex.Message, ex.Errors));
+        }
     }
 }
