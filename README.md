@@ -13,7 +13,7 @@
 |:---:|---|:---:|---|
 | **05** | Tạo dự án, cơ sở dữ liệu và API đọc dữ liệu | **Đã hoàn thành** | Khởi tạo Solution, cấu hình EF Core kết nối PostgreSQL, Seed Data (`Customer`, `Contract`, `PriceList`), viết các API đọc dữ liệu cơ bản. |
 | **06** | Viết các chức năng và kiểm tra quy tắc nghiệp vụ | **Đã hoàn thành** | Hoàn thiện CRUD Customer, Contract, Pricing; Lập trình kỹ lưỡng US03 (Gửi duyệt hợp đồng); Kiểm tra nghiêm ngặt CTR-01, CTR-02, CTR-03 và chống gửi trùng lặp (Yêu cầu 12). |
-| **07** | Viết kiểm thử (Unit test & Integration test) | *Sắp tới* | Viết bộ kiểm thử tự động xUnit cho CTR-01, CTR-02, CTR-03 và tích hợp API. |
+| **07** | Viết kiểm thử, sửa lỗi và hoàn thiện | **Đã hoàn thành** | Xây dựng dự án kiểm thử xUnit tách biệt Unit Test & Integration Test; Đạt 100% Pass cho toàn bộ TC01 - TC08; Khắc phục các lỗi tiềm ẩn; Xuất file báo cáo TRX. |
 
 ---
 
@@ -191,15 +191,50 @@ Sau khi khởi động, truy cập giao diện Swagger UI trực quan tại:
 
 ---
 
-## 7. Danh mục nghiệm thu nộp bài Tuần 06
-- [x] Kế thừa toàn bộ cơ sở dữ liệu và mã nguồn Tuần 05.
-- [x] Tạo Migration bổ sung `AddContractFieldsForWeek06` cho thực thể Contract.
-- [x] Viết đầy đủ các API CRUD cho Customer, Contract và Pricing.
-- [x] Cài đặt hoàn chỉnh User Story US03 (`POST /api/contracts/{id}/submit`).
-- [x] Kiểm tra và bảo vệ nghiêm ngặt quy tắc CTR-01 (chỉ sửa ở Draft/Revision Requested).
-- [x] Kiểm tra và bảo vệ nghiêm ngặt quy tắc CTR-02 (kiểm tra Customer Active, ngày hiệu lực, terms, tệp đính kèm, totalAmount).
-- [x] Đảm bảo tuân thủ CTR-03 (không chuyển thẳng từ Draft sang Approved, chỉ chuyển sang PendingApproval).
-- [x] Xử lý chống gửi duyệt trùng lặp (Yêu cầu 12).
-- [x] Thống nhất định dạng phản hồi API qua `ApiResponse<T>`.
-- [x] Cập nhật bộ test nhanh trong file `QTKD.Api.http`.
-- [x] Bố trí thư mục `docs/` chứa tài liệu API, bảng đối chiếu quy tắc nghiệp vụ và kịch bản demo theo đúng chuẩn nộp bài.
+## 7. Báo cáo kiểm thử tự động Tuần 07 (xUnit & InMemory DB)
+
+### 7.1. Cấu trúc bộ kiểm thử
+Dự án kiểm thử được đặt tại thư mục `tests/QTKD.Tests`, tham chiếu trực tiếp đến `QTKD.Api`, tách biệt rõ ràng giữa kiểm thử đơn vị và kiểm thử tích hợp:
+- **Unit Tests (`UnitTests/`):** Kiểm thử trực tiếp tầng nghiệp vụ `CustomerService` và `ContractService` đối với các quy tắc CTR-01, CTR-02, CTR-03 và chống gửi duyệt trùng lặp (Yêu cầu 12).
+- **Integration Tests (`IntegrationTests/`):** Kiểm thử gọi trực tiếp qua Controller API, kiểm tra HTTP status code (200, 201, 400), cấu trúc phản hồi `ApiResponse<T>` và dữ liệu được ghi nhận trong cơ sở dữ liệu.
+- **Cơ sở dữ liệu kiểm thử độc lập (`Common/TestDbContextFactory.cs`):** Sử dụng Entity Framework Core InMemory Database, đảm bảo an toàn tuyệt đối cho cơ sở dữ liệu thật và các test không bị ảnh hưởng lẫn nhau.
+
+### 7.2. Bảng kết quả kiểm thử các ca tối thiểu (TC01 – TC08)
+
+Toàn bộ **8/8 test cases tối thiểu** (24 ca kiểm thử chi tiết) được tự động hóa 100% bằng xUnit và đều đạt trạng thái **PASS**.
+
+| Mã Test | Dữ liệu / Thao tác kiểm tra | Kết quả mong đợi | Tự động / Thủ công | Kết quả thực tế | Trạng thái |
+|:---:|---|---|:---:|---|:---:|
+| **TC01** | Tạo Customer hợp lệ | Tạo thành công (HTTP 201), đọc lại đúng dữ liệu từ DB | Tự động (Unit & Integration) | Khách hàng được tạo với Id > 0, trạng thái `Active`, truy vấn DB đọc lại chính xác | **PASS** |
+| **TC02** | Tạo Customer thiếu thông tin bắt buộc (Name rỗng) | Bị từ chối (HTTP 400), có thông báo lỗi, không lưu vào DB | Tự động (Unit & Integration) | Bị từ chối ngay lập tức, trả về thông báo lỗi, không tạo bản ghi rác | **PASS** |
+| **TC03** | Sửa Contract ở trạng thái `Draft` | Cập nhật thành công (HTTP 200) khi dữ liệu hợp lệ (CTR-01) | Tự động (Unit & Integration) | Cho phép cập nhật giá trị, điều khoản, file đính kèm; DB lưu dữ liệu mới | **PASS** |
+| **TC04** | Sửa Contract ở trạng thái `PendingApproval` | Bị từ chối (HTTP 400), dữ liệu gốc trong DB giữ nguyên (CTR-01) | Tự động (Unit & Integration) | Ném lỗi vi phạm CTR-01, cấm sửa đổi; dữ liệu trong DB bảo toàn | **PASS** |
+| **TC05** | Submit Contract thiếu điều kiện CTR-02 (thiếu file, amount = 0, khách hàng inactive) | Bị từ chối (HTTP 400), danh sách lỗi cụ thể, vẫn giữ `Draft` | Tự động (Unit & Integration) | Ném lỗi CTR-02 kèm chi tiết các trường thiếu; trạng thái trong DB vẫn là `Draft` | **PASS** |
+| **TC06** | Submit Contract hợp lệ đầy đủ điều kiện CTR-02 | Chuyển sang `PendingApproval`, cập nhật `SubmittedAt` (CTR-03) | Tự động (Unit & Integration) | Chuyển trạng thái sang `PendingApproval`, ghi nhận thời điểm gửi duyệt | **PASS** |
+| **TC07** | Thử chuyển `Draft` thẳng sang `Approved` qua API cập nhật | Bị từ chối (HTTP 400), không cho phép đổi trạng thái trực tiếp | Tự động (Unit & Integration) | Cảnh báo vi phạm quy tắc CTR-03; hợp đồng vẫn giữ nguyên trạng thái `Draft` | **PASS** |
+| **TC08** | Submit lặp lại một hợp đồng đã ở `PendingApproval` | Bị từ chối (HTTP 400), không tạo thêm kết quả xử lý trùng | Tự động (Unit & Integration) | Báo lỗi hợp đồng đã được trình duyệt trước đó, không ghi đè `SubmittedAt` | **PASS** |
+
+### 7.3. Các lỗi phát hiện được trong quá trình kiểm thử và cách khắc phục
+1. **Lỗi 1 (Tầng Service thiếu kiểm tra tên khách hàng):**
+   - *Hiện tượng:* Khi viết Unit Test gọi `CustomerService.CreateCustomerAsync` với `Name = ""`, service vẫn cho phép tạo do trước đó chỉ dựa vào `[Required]` ở DTO tầng Controller.
+   - *Khắc phục:* Bổ sung kiểm tra `if (string.IsNullOrWhiteSpace(dto.Name)) throw new BusinessRuleException("Tên khách hàng không được để trống.");` trực tiếp vào `CustomerService`.
+2. **Lỗi 2 (Cơ chế chặn đổi trạng thái tùy tiện sang Approved - CTR-03):**
+   - *Hiện tượng:* Khi client gửi payload `PUT /api/contracts/{id}` có `Status = "Approved"`, hệ thống cần một thông báo lỗi từ chối cụ thể theo đúng quy tắc CTR-03.
+   - *Khắc phục:* Thêm trường `Status` vào `UpdateContractDto` và cài đặt logic chặn tại `ContractService.UpdateContractAsync`, ném `BusinessRuleException` cảnh báo vi phạm CTR-03.
+
+### 7.4. Hướng dẫn chạy kiểm thử tự động
+Tại thư mục gốc dự án, thực hiện lệnh:
+```bash
+dotnet test --logger "trx;LogFileName=TestResults.trx" --logger "console;verbosity=normal"
+```
+Kết quả chạy kiểm thử sẽ được hiển thị trực tiếp trên màn hình console và lưu vào file báo cáo `docs/TestResults.trx`.
+
+*(Xem báo cáo kiểm thử chi tiết tại [docs/TEST_REPORT_WEEK07.md](file:///d:/download/23120241_TH7/docs/TEST_REPORT_WEEK07.md))*.
+
+---
+
+## 8. Danh mục nghiệm thu tổng kết Phase 2 (Tuần 05, 06, 07)
+- [x] **Tuần 05:** Khởi tạo Solution, cấu hình EF Core kết nối PostgreSQL, Seed Data ban đầu và hoàn thành API đọc dữ liệu.
+- [x] **Tuần 06:** Hoàn thiện toàn bộ chức năng CRUD Customer, Contract, Pricing; Lập trình kỹ lưỡng US03 (`POST /api/contracts/{id}/submit`); Kiểm tra nghiêm ngặt CTR-01, CTR-02, CTR-03 và chống gửi duyệt trùng lặp (Yêu cầu 12).
+- [x] **Tuần 07:** Xây dựng dự án kiểm thử xUnit riêng (`tests/QTKD.Tests`); Tách biệt Unit Test nghiệp vụ và Integration Test API; Đạt 100% Pass cho toàn bộ TC01 - TC08 (24 test cases); Khắc phục các lỗi tiềm ẩn; Xuất file báo cáo TRX.
+- [x] **Tổ chức thư mục:** Đúng quy định nộp bài chung gồm `QTKD.Api/` (mã nguồn), `tests/` (kiểm thử), `docs/` (tài liệu/minh chứng), `README.md`.
