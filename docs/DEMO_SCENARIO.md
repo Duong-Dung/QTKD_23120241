@@ -15,11 +15,11 @@ Tài liệu này được thiết kế để sinh viên tự kiểm tra (test) t
   Đảm bảo PostgreSQL đang chạy và cơ sở dữ liệu `qtkd_db` đã được tạo.
 
 ### Bước 1.2: Cấu hình chuỗi kết nối (nếu cần)
-- Mở file [appsettings.json](file:///d:/download/23120241_TH6/QTKD.Api/appsettings.json).
+- Mở file [appsettings.json](file:///d:/download/23120241_TH7/QTKD.Api/appsettings.json).
 - Kiểm tra cổng (`Port=5432` hoặc `5433`) và mật khẩu (`Password=...`) khớp với máy của bạn.
 
 ### Bước 1.3: Cập nhật Migration vào cơ sở dữ liệu
-Tại thư mục gốc dự án (`d:\download\23120241_TH6`), mở terminal và chạy:
+Tại thư mục gốc dự án (`d:\download\23120241_TH7`), mở terminal và chạy:
 ```powershell
 dotnet ef database update --project QTKD.Api
 ```
@@ -265,6 +265,6 @@ dotnet run --project QTKD.Api
 
 ## 4. Cách chạy nhanh bằng file `QTKD.Api.http`
 Nếu bạn dùng **VS Code** (đã cài extension *REST Client*):
-1. Mở file [QTKD.Api/QTKD.Api.http](file:///d:/download/23120241_TH6/QTKD.Api/QTKD.Api.http).
+1. Mở file [QTKD.Api/QTKD.Api.http](file:///d:/download/23120241_TH7/QTKD.Api/QTKD.Api.http).
 2. Click trực tiếp vào chữ **`Send Request`** màu xanh ở trên từng request.
 3. Cửa sổ bên phải sẽ hiển thị trực quan toàn bộ HTTP Status, Header và Body JSON kết quả.
