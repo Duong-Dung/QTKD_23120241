@@ -72,6 +72,7 @@ Trong quá trình xây dựng bộ kiểm thử và đối soát quy tắc nghi�
   }
   ```
   Nhờ đó, dù gọi qua API Controller hay gọi trực tiếp tầng nghiệp vụ, hệ thống đều từ chối tạo khách hàng rỗng và ném thông báo lỗi chuẩn xác.
+- **Mã Git commit sửa lỗi:** `438b826` (*"fix: bo sung validate bat buoc Name o CustomerService va chan chuyen sang Approved theo CTR-03"*)
 
 ### Lỗi 2: Chưa có cơ chế bảo vệ ngăn chặn việc cố ý đổi trạng thái sang `Approved` qua API cập nhật (CTR-03)
 - **Cách tái hiện lỗi:**
@@ -90,6 +91,7 @@ Trong quá trình xây dựng bộ kiểm thử và đối soát quy tắc nghi�
   }
   ```
   Khi người dùng cố ý gửi `Status = "Approved"`, API lập tức phản hồi HTTP `400 Bad Request` kèm thông điệp cảnh báo vi phạm CTR-03.
+- **Mã Git commit sửa lỗi:** `438b826` (*"fix: bo sung validate bat buoc Name o CustomerService va chan chuyen sang Approved theo CTR-03"*)
 
 ---
 
@@ -97,7 +99,7 @@ Trong quá trình xây dựng bộ kiểm thử và đối soát quy tắc nghi�
 
 ### Kết quả chạy lệnh `dotnet test`
 ```
-Test run for D:\download\23120241_TH7\tests\QTKD.Tests\bin\Debug\net10.0\QTKD.Tests.dll (.NETCoreApp,Version=v10.0)
+Test run for D:\23120241_TH7\tests\QTKD.Tests\bin\Debug\net10.0\QTKD.Tests.dll (.NETCoreApp,Version=v10.0)
 A total of 1 test files matched the specified pattern.
 [xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v3.1.4+50e68bbb8b (64-bit .NET 10.0.13)
 [xUnit.net 00:00:00.06]   Discovering: QTKD.Tests
@@ -127,7 +129,7 @@ A total of 1 test files matched the specified pattern.
   Passed QTKD.Tests.UnitTests.ContractServiceTests.TC07_DirectUpdateToApprovedStatus_ShouldBeRejected [1 ms]
   Passed QTKD.Tests.UnitTests.ContractServiceTests.TC05_SubmitContract_WithInactiveCustomer_ShouldBeRejected [3 ms]
   Passed QTKD.Tests.IntegrationTests.ContractApiIntegrationTests.FullWorkflowDemo_Week06_ShouldExecuteAllStepsSuccessfully [11 ms]
-Results File: D:\download\23120241_TH7\tests\QTKD.Tests\TestResults\TestResults.trx
+Results File: D:\23120241_TH7\tests\QTKD.Tests\TestResults\TestResults.trx
 
 Test Run Successful.
 Total tests: 24

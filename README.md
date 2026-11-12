@@ -175,7 +175,7 @@ Sau khi khởi động, truy cập giao diện Swagger UI trực quan tại:
 ## 6. Hướng dẫn chạy thử Luồng Demo Tuần 06 (Mục 4.3 - Bước 13)
 
 Để thực hiện kiểm tra luồng xuyên suốt đề bài yêu cầu:
-1. Mở file [QTKD.Api/QTKD.Api.http](file:///d:/download/23120241_TH7/QTKD.Api/QTKD.Api.http) trên VS Code hoặc truy cập giao diện Swagger UI.
+1. Mở file [QTKD.Api/QTKD.Api.http](QTKD.Api/QTKD.Api.http) trên VS Code hoặc truy cập giao diện Swagger UI.
 2. Thực hiện lần lượt 6 bước theo kịch bản:
    - **Bước 1 (Tạo Customer):** Gửi `POST /api/customers` để tạo khách hàng mới.
    - **Bước 2 (Tạo Contract Draft):** Gửi `POST /api/contracts` tạo hợp đồng còn thiếu tài liệu và giá trị.
@@ -187,7 +187,7 @@ Sau khi khởi động, truy cập giao diện Swagger UI trực quan tại:
    - Thử sửa hợp đồng vừa chuyển sang `PendingApproval` -> Bị chặn bởi CTR-01.
    - Thử gửi duyệt lại hợp đồng vừa chuyển sang `PendingApproval` -> Bị chặn bởi cơ chế chống gửi lặp (Yêu cầu 12).
 
-*(Xem hướng dẫn chi tiết tại [docs/DEMO_SCENARIO.md](file:///d:/download/23120241_TH7/docs/DEMO_SCENARIO.md))*.
+*(Xem hướng dẫn chi tiết tại [docs/DEMO_SCENARIO.md](docs/DEMO_SCENARIO.md))*.
 
 ---
 
@@ -229,7 +229,7 @@ dotnet test --logger "trx;LogFileName=TestResults.trx" --logger "console;verbosi
 ```
 Kết quả chạy kiểm thử sẽ được hiển thị trực tiếp trên màn hình console và lưu vào file báo cáo `docs/TestResults.trx`.
 
-*(Xem báo cáo kiểm thử chi tiết tại [docs/TEST_REPORT_WEEK07.md](file:///d:/download/23120241_TH7/docs/TEST_REPORT_WEEK07.md))*.
+*(Xem báo cáo kiểm thử chi tiết tại [docs/TEST_REPORT_WEEK07.md](docs/TEST_REPORT_WEEK07.md))*.
 
 ---
 
