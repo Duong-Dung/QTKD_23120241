@@ -70,8 +70,7 @@ Dự án được tổ chức theo mô hình phân tầng hướng đối tượ
 ├── docs/                                  # Tài liệu chi tiết theo quy định nộp bài
 │   ├── API_DOCUMENTATION.md               # Tài liệu chi tiết toàn bộ Endpoint, Request/Response mẫu (Tuần 06)
 │   ├── BUSINESS_RULES_MAPPING.md          # Bảng đối chiếu US03, CTR-01, CTR-02, CTR-03 với code (Tuần 06)
-│   ├── TEST_REPORT_WEEK07.md              # Báo cáo kết quả kiểm thử tự động xUnit chi tiết (Tuần 07)
-│   └── TestResults.trx                    # File kết quả kiểm thử định dạng chuẩn Visual Studio
+│   └── TestResults.trx                    # File kết quả kiểm thử tự động định dạng chuẩn Visual Studio
 └── QTKD.Api/                              # Dự án ASP.NET Core Web API
     ├── Controllers/                       # [API Layer]
     │   ├── CustomersController.cs
@@ -230,7 +229,7 @@ dotnet test --logger "trx;LogFileName=TestResults.trx" --logger "console;verbosi
 ```
 Kết quả chạy kiểm thử sẽ được hiển thị trực tiếp trên màn hình console và lưu vào file báo cáo `docs/TestResults.trx`.
 
-*(Xem báo cáo kiểm thử chi tiết tại [docs/TEST_REPORT_WEEK07.md](docs/TEST_REPORT_WEEK07.md))*.
+*(Báo cáo kết quả kiểm thử chi tiết được nộp dưới dạng file PDF "Báo cáo kiểm thử – Tuần 07" và file kết quả [docs/TestResults.trx](docs/TestResults.trx))*.
 
 ---
 
