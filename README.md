@@ -68,9 +68,10 @@ Dự án được tổ chức theo mô hình phân tầng hướng đối tượ
 ├── docker-compose.yml                     # Cấu hình PostgreSQL chạy container
 ├── README.md                              # Hướng dẫn tổng quan & báo cáo thực hành
 ├── docs/                                  # Tài liệu chi tiết theo quy định nộp bài
-│   ├── API_DOCUMENTATION.md               # Tài liệu chi tiết toàn bộ Endpoint, Request/Response mẫu
-│   ├── BUSINESS_RULES_MAPPING.md          # Bảng đối chiếu US03, CTR-01, CTR-02, CTR-03 với code
-│   └── DEMO_SCENARIO.md                   # Kịch bản thực hiện từng bước luồng demo tuần 06
+│   ├── API_DOCUMENTATION.md               # Tài liệu chi tiết toàn bộ Endpoint, Request/Response mẫu (Tuần 06)
+│   ├── BUSINESS_RULES_MAPPING.md          # Bảng đối chiếu US03, CTR-01, CTR-02, CTR-03 với code (Tuần 06)
+│   ├── TEST_REPORT_WEEK07.md              # Báo cáo kết quả kiểm thử tự động xUnit chi tiết (Tuần 07)
+│   └── TestResults.trx                    # File kết quả kiểm thử định dạng chuẩn Visual Studio
 └── QTKD.Api/                              # Dự án ASP.NET Core Web API
     ├── Controllers/                       # [API Layer]
     │   ├── CustomersController.cs
@@ -187,7 +188,7 @@ Sau khi khởi động, truy cập giao diện Swagger UI trực quan tại:
    - Thử sửa hợp đồng vừa chuyển sang `PendingApproval` -> Bị chặn bởi CTR-01.
    - Thử gửi duyệt lại hợp đồng vừa chuyển sang `PendingApproval` -> Bị chặn bởi cơ chế chống gửi lặp (Yêu cầu 12).
 
-*(Xem hướng dẫn chi tiết tại [docs/DEMO_SCENARIO.md](docs/DEMO_SCENARIO.md))*.
+*(Luồng demo này cũng được kiểm thử tự động toàn diện trong Integration Test `FullWorkflowDemo_Week06_ShouldExecuteAllStepsSuccessfully` tại [tests/QTKD.Tests](tests/QTKD.Tests))*.
 
 ---
 
